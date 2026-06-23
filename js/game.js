@@ -11,7 +11,7 @@ export const ABILITIES = {
 export function createGame(players, mode, settings) {
   const seed = mode === "daily" ? dateSeed() : randomSeed();
   const random = mulberry32(seed);
-  const selectedPlayers = generateQuestion(players, random, settings.minOvr ?? 75);
+  const selectedPlayers = generateQuestion(players, random, settings.minOvr);
   const answerRanking = [...selectedPlayers].sort((a, b) => b.ovr - a.ovr);
 
   return {
@@ -35,8 +35,8 @@ export function createGame(players, mode, settings) {
   };
 }
 
-export function generateQuestion(players, random, minOvr = 75) {
-  const eligible = players.filter((player) => player.ovr >= minOvr);
+export function generateQuestion(players, random, minOvr = null) {
+  const eligible = Number.isFinite(minOvr) ? players.filter((player) => player.ovr >= minOvr) : players;
   const source = eligible.length >= 10 ? eligible : players;
   const groups = new Map();
 
@@ -111,7 +111,7 @@ export function selectRatingPlayer(score, players, random) {
     return {
       label: rank.label,
       playerName: "ペレ",
-      image: "./assets/pele.svg"
+      image: "./assets/pele.jpg"
     };
   }
 

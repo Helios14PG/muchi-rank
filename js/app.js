@@ -574,7 +574,7 @@ function scoreRow(label, value) {
 }
 
 function imageMarkup(src, alt, className) {
-  return `<img class="${className}" src="${escapeAttribute(src || PLACEHOLDER)}" alt="${escapeAttribute(alt)}" loading="lazy" onerror="this.onerror=null;this.src='${PLACEHOLDER}'">`;
+  return `<img class="${className}" src="${escapeAttribute(src || PLACEHOLDER)}" alt="${escapeAttribute(alt)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='${PLACEHOLDER}'">`;
 }
 
 function rankColor(index) {
