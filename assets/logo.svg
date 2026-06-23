@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="360" viewBox="0 0 900 360" role="img" aria-label="Muchi Rank logo">
+  <rect width="900" height="360" fill="#08090b"/>
+  <text x="450" y="170" text-anchor="middle" font-family="Montserrat, Arial, sans-serif" font-size="118" font-weight="900" fill="#f4c95d">MUCHI</text>
+  <text x="450" y="254" text-anchor="middle" font-family="Oswald, Arial, sans-serif" font-size="74" font-weight="700" fill="#d9dee8">RANK</text>
+  <path d="M250 292h120" stroke="#f4c95d" stroke-width="14"/>
+  <path d="M390 292h120" stroke="#d9dee8" stroke-width="14"/>
+  <path d="M530 292h120" stroke="#c8844a" stroke-width="14"/>
+</svg>

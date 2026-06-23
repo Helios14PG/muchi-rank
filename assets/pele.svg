@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Pele">
+  <rect width="512" height="512" fill="#08090b"/>
+  <circle cx="256" cy="170" r="86" fill="#3b2a1f"/>
+  <path d="M136 430c18-92 74-144 120-144s102 52 120 144" fill="#f4c95d"/>
+  <path d="M168 142c34-80 141-92 184-7-51-30-115-25-184 7z" fill="#171b22"/>
+  <circle cx="224" cy="176" r="9" fill="#0a0a0a"/>
+  <circle cx="288" cy="176" r="9" fill="#0a0a0a"/>
+  <path d="M218 220c28 20 55 20 82 0" fill="none" stroke="#0a0a0a" stroke-width="9" stroke-linecap="round"/>
+  <text x="256" y="476" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" font-weight="800" fill="#f4c95d">PELE</text>
+</svg>
