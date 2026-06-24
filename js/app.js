@@ -483,7 +483,7 @@ function logoMarkup() {
         <span class="logo-main">MUCHI</span>
         <span class="logo-sub">RANK</span>
       </div>
-      <p>Guess Footballers By Knowledge</p>
+      <p>Make Rank By Face</p>
     </div>
   `;
 }
