@@ -248,36 +248,130 @@ function showHighLowModal(current, placed) {
 
 function renderAdditionalTime() {
   const game = state.game;
+
   app.innerHTML = `
     <main class="screen additional">
       ${topBarMarkup("ADDITIONAL TIME")}
+
       <section class="additional-hero">
         <h1 class="additional-title">ADDITIONAL TIME</h1>
         <p>一度だけ選手を入れ替えることができます。選手を2名選択してください。</p>
-        <button class="secondary-button" data-action="finish-additional" aria-label="アディショナルタイムを終了する">アディショナルタイムを終了する</button>
+
+        <button
+          class="secondary-button"
+          data-action="finish-additional"
+          aria-label="アディショナルタイムを終了して結果を表示"
+        >
+          アディショナルタイムを終了して結果を表示
+        </button>
       </section>
+
       <section class="panel">
         <div class="ranking-list">
-          ${game.playerRanking.map((player, index) => rankSlotMarkup(player, index, "swap")).join("")}
+          ${game.playerRanking
+            .map((player, index) => rankSlotMarkup(player, index, "swap"))
+            .join("")}
+        </div>
+      </section>
+
+      <section id="swap-confirm-panel" class="panel hidden">
+        <p id="swap-confirm-message"></p>
+
+        <div class="button-row">
+          <button id="confirm-swap" class="primary-button">
+            入れ替える
+          </button>
+
+          <button id="cancel-swap" class="secondary-button">
+            キャンセル
+          </button>
         </div>
       </section>
     </main>
   `;
 
-  app.querySelector("[data-action='finish-additional']").addEventListener("click", showResult);
-  app.querySelectorAll("[data-rank-swap]").forEach((button) => {
+  app
+    .querySelector("[data-action='finish-additional']")
+    .addEventListener("click", showResult);
+
+  const rankingButtons = app.querySelectorAll("[data-rank-swap]");
+
+  rankingButtons.forEach((button) => {
     button.addEventListener("click", () => {
-      const index = Number(button.dataset.rankSwap);
       if (game.additionalTimeUsed) return;
-      if (!state.additionalSelection.includes(index)) state.additionalSelection.push(index);
+
+      const index = Number(button.dataset.rankSwap);
+
+      const existingIndex =
+        state.additionalSelection.indexOf(index);
+
+      // 選択解除
+      if (existingIndex !== -1) {
+        state.additionalSelection.splice(existingIndex, 1);
+        button.classList.remove("selected-slot");
+        hideSwapConfirmation();
+        return;
+      }
+
+      // 3人目は選べない
+      if (state.additionalSelection.length >= 2) {
+        return;
+      }
+
+      // 選択
+      state.additionalSelection.push(index);
+      button.classList.add("selected-slot");
+
+      // 2人揃ったら確認表示
       if (state.additionalSelection.length === 2) {
-        swapRanks(game, state.additionalSelection[0], state.additionalSelection[1]);
-        showResult();
-      } else {
-        button.classList.add("selected-slot");
+        showSwapConfirmation();
       }
     });
   });
+
+  function showSwapConfirmation() {
+    const [indexA, indexB] = state.additionalSelection;
+
+    const playerA = game.playerRanking[indexA];
+    const playerB = game.playerRanking[indexB];
+
+    const panel =
+      document.getElementById("swap-confirm-panel");
+
+    const message =
+      document.getElementById("swap-confirm-message");
+
+    message.textContent =
+      `${playerA.name} と ${playerB.name} を入れ替えて結果を表示しますか？`;
+
+    panel.classList.remove("hidden");
+
+    document
+      .getElementById("confirm-swap")
+      .addEventListener("click", () => {
+        swapRanks(game, indexA, indexB);
+        game.additionalTimeUsed = true;
+        showResult();
+      });
+
+    document
+      .getElementById("cancel-swap")
+      .addEventListener("click", () => {
+        state.additionalSelection = [];
+
+        rankingButtons.forEach((btn) =>
+          btn.classList.remove("selected-slot")
+        );
+
+        hideSwapConfirmation();
+      });
+  }
+
+  function hideSwapConfirmation() {
+    document
+      .getElementById("swap-confirm-panel")
+      .classList.add("hidden");
+  }
 }
 
 function showResult() {
