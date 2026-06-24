@@ -311,19 +311,19 @@ function renderResult(displayScore = state.score.total) {
         <h2 class="panel-heading">スコア内訳</h2>
         <div class="panel-section">
           ${scoreRow("素点", state.score.baseScore)}
-          ${scoreRow("連続", state.score.streakBonus)}
-          ${scoreRow("1位", state.score.firstBonus)}
-          ${scoreRow("最下位", state.score.lastBonus)}
-          ${scoreRow("合計", state.score.total)}
+          ${scoreRow("連続正解ボーナス", state.score.streakBonus)}
+          ${scoreRow("1位的中ボーナス", state.score.firstBonus)}
+          ${scoreRow("最下位的中ボーナス", state.score.lastBonus)}
+          ${scoreRow("合計得点", state.score.total)}
         </div>
       </section>
       <section class="columns-2">
         <div class="panel">
-          <h2 class="panel-heading">プレイヤー順位</h2>
+          <h2 class="panel-heading">あなたが決めつけた順位</h2>
           <div class="ranking-list">${state.game.playerRanking.map(resultRowMarkup).join("")}</div>
         </div>
         <div class="panel">
-          <h2 class="panel-heading">正解順位</h2>
+          <h2 class="panel-heading">正解の順位</h2>
           <div class="ranking-list">${state.game.answerRanking.map(resultRowMarkup).join("")}</div>
         </div>
       </section>
@@ -395,9 +395,9 @@ function showRules() {
 <p>さらに以下のボーナス点が加算され、満点は150点となります。</p>
 
 <p>
-・最大連続正解ボーナス … 連続して順位を的中させた数 × 2点<br>
-・1位ボーナス … 1位の選手を的中で +10点<br>
-・最下位ボーナス … 最下位の選手を的中で +20点
+・連続正解ボーナス … 連続して順位を的中させた数 × 2点<br>
+・1位的中ボーナス … 1位の選手を的中で +10点<br>
+・最下位的中ボーナス … 最下位の選手を的中で +20点
 </p>
 
 <p>※選手データはすべてFC26リリース時点のステータスを使用しています。</p>
