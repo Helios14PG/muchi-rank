@@ -310,11 +310,11 @@ function renderResult(displayScore = state.score.total) {
       <section class="panel">
         <h2 class="panel-heading">スコア内訳</h2>
         <div class="panel-section">
-          ${scoreRow("素点", state.score.baseScore)}
-          ${scoreRow("連続正解ボーナス", state.score.streakBonus)}
-          ${scoreRow("1位的中ボーナス", state.score.firstBonus)}
-          ${scoreRow("最下位的中ボーナス", state.score.lastBonus)}
-          ${scoreRow("合計得点", state.score.total)}
+          ${scoreRow("素点", '${state.score.baseScore}/100')}
+          ${scoreRow("連続正解ボーナス(連続数×2)", '${state.score.streakBonus}/20')}
+          ${scoreRow("1位的中ボーナス", '${state.score.firstBonus}/10')}
+          ${scoreRow("最下位的中ボーナス", '${state.score.lastBonus}/20')}
+          ${scoreRow("合計得点", '${state.score.total}/150')}
         </div>
       </section>
       <section class="columns-2">
