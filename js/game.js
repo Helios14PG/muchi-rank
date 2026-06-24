@@ -5,7 +5,7 @@ export const ABILITIES = {
   ovrOpen: "OVRオープン",
   teamOpen: "チームオープン",
   highLow: "ハイアンドロー",
-  substitution: "選手交代"
+  substitution: "選手交代(同OVRの選手と交代)"
 };
 
 export function createGame(players, mode, settings) {
