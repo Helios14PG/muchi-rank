@@ -505,6 +505,31 @@ button:disabled {
   border-top: 1px solid var(--line);
 }
 
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+
+  background: rgba(0, 0, 0, 0.7);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 9999;
+}
+
+.modal-content {
+  width: min(500px, 90vw);
+
+  background: var(--surface);
+  border-radius: 16px;
+
+  padding: 24px;
+
+  text-align: center;
+
+  box-shadow: 0 0 40px rgba(0,0,0,0.5);
+}
 .share-preview {
   width: 100%;
   min-height: 220px;
