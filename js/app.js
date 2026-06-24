@@ -388,6 +388,10 @@ function showResult() {
   if (game.mode === "daily") state.settings.dailyBest = Math.max(state.settings.dailyBest, result.score.total);
   saveStorage();
   renderResult(0);
+  window.scrollTo({
+    top: 0,
+    behavior: "instant"
+  });
   animateScore(result.score.total);
   if (result.score.total >= 150) runConfetti();
 }
