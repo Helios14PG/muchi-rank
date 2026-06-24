@@ -73,7 +73,9 @@ button:disabled {
 }
 
 .logo {
-  display: inline-grid;
+  display: grid; /* inline-grid から grid に変更 */
+  place-items: center; /* 中身のテキストも中央に */
+  margin: 0 auto; /* 左右に自動で余白を作って中央配置 */
   gap: 0;
   text-align: center;
   text-transform: uppercase;
