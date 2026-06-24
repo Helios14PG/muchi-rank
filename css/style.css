@@ -73,14 +73,12 @@ button:disabled {
 }
 
 .logo {
-  display: grid; /* inline-grid から grid に変更 */
-  place-items: center; /* 中身のテキストも中央に */
-  margin: 0 auto; /* 左右に自動で余白を作って中央配置 */
+  display: inline-grid;
   gap: 0;
   text-align: center;
   text-transform: uppercase;
   line-height: 0.86;
-  filter: drop-shadow(0 12px 28px rgba(244, 201, 93, 0.18));
+  filter: drop-shadow(0 12px 28px rgba(244, 201, 93, 0.18))
 }
 
 .logo-main {
@@ -103,6 +101,7 @@ button:disabled {
 .home {
   display: grid;
   place-items: center;
+  justify-items: center; /* 確実に横方向の中央に集める */
   gap: 24px;
   padding-top: clamp(16px, 6vh, 70px);
 }
@@ -113,6 +112,14 @@ button:disabled {
   border-radius: 8px;
   background: rgba(17, 20, 25, 0.88);
   box-shadow: var(--shadow);
+}
+
+/* トップページのロゴ専用の配置設定 */
+.home .logo {
+  display: grid;       /* inline-grid から grid にして横幅を保つ */
+  margin: 0 auto;      /* 左右の余白を自動計算して完全に中央へ */
+  justify-content: center;
+  text-align: center;
 }
 
 .panel-section {
