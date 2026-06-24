@@ -554,6 +554,17 @@ button:disabled {
   background: rgba(239, 83, 80, 0.08);
 }
 
+.hidden {
+  display: none;
+}
+
+.button-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
