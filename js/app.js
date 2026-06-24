@@ -274,19 +274,23 @@ function renderAdditionalTime() {
         </div>
       </section>
 
-      <section id="swap-modal" class="panel hidden">
-        <p id="swap-confirm-message"></p>
+      <div id="swap-modal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <h2>順位入れ替え確認</h2>
 
-        <div class="button-row">
-          <button id="confirm-swap" class="primary-button">
-            入れ替える
-          </button>
+    <p id="swap-confirm-message"></p>
 
-          <button id="cancel-swap" class="secondary-button">
-            キャンセル
-          </button>
-        </div>
-      </section>
+    <div class="button-row">
+      <button id="confirm-swap" class="primary-button">
+        入れ替える
+      </button>
+
+      <button id="cancel-swap" class="secondary-button">
+        キャンセル
+      </button>
+    </div>
+  </div>
+</div>
     </main>
   `;
 
