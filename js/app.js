@@ -274,7 +274,7 @@ function renderAdditionalTime() {
         </div>
       </section>
 
-      <section id="swap-confirm-panel" class="panel hidden">
+      <section id="swap-modal" class="panel hidden">
         <p id="swap-confirm-message"></p>
 
         <div class="button-row">
@@ -336,7 +336,7 @@ function renderAdditionalTime() {
     const playerB = game.playerRanking[indexB];
 
     const panel =
-      document.getElementById("swap-confirm-panel");
+      document.getElementById("swap-modal");
 
     const message =
       document.getElementById("swap-confirm-message");
@@ -369,7 +369,7 @@ function renderAdditionalTime() {
 
   function hideSwapConfirmation() {
     document
-      .getElementById("swap-confirm-panel")
+      .getElementById("swap-modal")
       .classList.add("hidden");
   }
 }
@@ -404,11 +404,11 @@ function renderResult(displayScore = state.score.total) {
       <section class="panel">
         <h2 class="panel-heading">スコア内訳</h2>
         <div class="panel-section">
-          ${scoreRow("素点", '${state.score.baseScore}/100')}
-          ${scoreRow("連続正解ボーナス(連続数×2)", '${state.score.streakBonus}/20')}
-          ${scoreRow("1位的中ボーナス", '${state.score.firstBonus}/10')}
-          ${scoreRow("最下位的中ボーナス", '${state.score.lastBonus}/20')}
-          ${scoreRow("合計得点", '${state.score.total}/150')}
+          ${scoreRow("素点", `${state.score.baseScore}/100`)}
+          ${scoreRow("連続正解ボーナス(連続数×2)", `${state.score.streakBonus}/20`)}
+          ${scoreRow("1位的中ボーナス", `${state.score.firstBonus}/10`)}
+          ${scoreRow("最下位的中ボーナス", `${state.score.lastBonus}/20`)}
+          ${scoreRow("合計得点", `${state.score.total}/150`)}
         </div>
       </section>
       <section class="columns-2">
