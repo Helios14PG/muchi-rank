@@ -413,9 +413,9 @@ function renderResult(displayScore = state.score.total) {
         <h2 class="panel-heading">スコア内訳</h2>
         <div class="panel-section">
           ${scoreRow("素点", `${state.score.baseScore}/100`)}
-          ${scoreRow("連続正解ボーナス(連続数×2)", `${state.score.streakBonus}/20`)}
+          ${scoreRow("連続正解ボーナス(連続数×3)", `${state.score.streakBonus}/30`)}
           ${scoreRow("1位的中ボーナス", `${state.score.firstBonus}/10`)}
-          ${scoreRow("最下位的中ボーナス", `${state.score.lastBonus}/20`)}
+          ${scoreRow("最下位的中ボーナス", `${state.score.lastBonus}/10`)}
           ${scoreRow("合計得点", `${state.score.total}/150`)}
         </div>
       </section>
@@ -497,9 +497,9 @@ function showRules() {
 <p>さらに以下のボーナス点が加算され、満点は150点となります。</p>
 
 <p>
-・連続正解ボーナス … 連続して順位を的中させた数 × 2点<br>
+・連続正解ボーナス … 連続して順位を的中させた数 × 3点<br>
 ・1位的中ボーナス … 1位の選手を的中で +10点<br>
-・最下位的中ボーナス … 最下位の選手を的中で +20点
+・最下位的中ボーナス … 最下位の選手を的中で +10点
 </p>
 
 <p>※選手データはすべてFC26リリース時点のステータスを使用しています。</p>
