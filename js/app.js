@@ -282,7 +282,7 @@ function renderAdditionalTime() {
 
     <div class="button-row">
       <button id="confirm-swap" class="primary-button">
-        入れ替える
+        入れ替えて結果を表示
       </button>
 
       <button id="cancel-swap" class="secondary-button">
