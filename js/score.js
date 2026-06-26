@@ -17,9 +17,9 @@ export function calculateScore(playerRanking, answerRanking) {
 
   const baseScore = Math.floor((correctPairs / totalPairs) * 100);
   const streak = longestCorrectStreak(playerRanking, answerRanking);
-  const streakBonus = streak * 2;
+  const streakBonus = streak * 3;
   const firstBonus = samePlayer(playerRanking[0], answerRanking[0]) ? 10 : 0;
-  const lastBonus = samePlayer(playerRanking[playerRanking.length - 1], answerRanking[answerRanking.length - 1]) ? 20 : 0;
+  const lastBonus = samePlayer(playerRanking[playerRanking.length - 1], answerRanking[answerRanking.length - 1]) ? 10 : 0;
   const total = baseScore + streakBonus + firstBonus + lastBonus;
 
   return {
