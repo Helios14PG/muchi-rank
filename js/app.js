@@ -661,7 +661,9 @@ function renderResult(displayScore = state.score.total) {
           <span>ゲームコード</span>
           <div class="game-code-line">
             <strong>${encodeGameCode(state.game.seed)}</strong>
-            <button class="copy-code-button" data-action="copy-game-code" aria-label="ゲームコードをコピー" title="ゲームコードをコピー">⧉</button>
+            <button class="copy-code-button" data-action="copy-game-code" aria-label="ゲームコードをコピー" title="ゲームコードをコピー">
+              <span class="copy-code-icon" aria-hidden="true"></span>
+            </button>
           </div>
         </div>
       </section>
