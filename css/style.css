@@ -364,6 +364,10 @@ button:disabled {
   gap: 18px;
 }
 
+.infinite-screen .progress {
+  font-weight: 800;
+}
+
 .infinite-status {
   padding: 20px;
   text-align: center;
@@ -377,10 +381,10 @@ button:disabled {
 }
 
 .infinite-streak {
-  margin: 10px 0 0;
+  margin: 0;
   color: var(--silver);
   font-family: Oswald, Inter, sans-serif;
-  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
 }
 
 .infinite-question {
@@ -764,6 +768,25 @@ button:disabled {
   color: var(--gold);
   font-family: Oswald, Inter, sans-serif;
   font-size: 1.45rem;
+}
+
+.game-code-line {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.copy-code-button {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  min-height: 34px;
+  border-color: rgba(244, 201, 93, 0.55);
+  background: rgba(244, 201, 93, 0.08);
+  color: var(--gold);
+  font-size: 1.05rem;
+  line-height: 1;
 }
 
 .score-total-row {
