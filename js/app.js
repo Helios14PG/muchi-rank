@@ -108,6 +108,7 @@ function renderHome() {
   app.querySelector("[data-action='rules']").addEventListener("click", showRules);
   app.querySelector("[data-action='start-infinite']").addEventListener("click", startInfiniteChallenge);
   bindHomeSettings();
+  scrollToTop();
 }
 
 function bindHomeSettings() {
@@ -183,7 +184,6 @@ function renderInfiniteHeader() {
   return `
     ${topBarMarkup("無限2択チャレンジ")}
     <section class="infinite-status panel">
-      <h1>無限2択チャレンジ</h1>
       <p class="infinite-streak">連続正解数：${state.infinity.streak}</p>
       <p class="infinite-question">どちらの方が強いでしょう？</p>
     </section>
@@ -659,7 +659,10 @@ function renderResult(displayScore = state.score.total) {
         </div>
         <div class="game-code-card">
           <span>ゲームコード</span>
-          <strong>${encodeGameCode(state.game.seed)}</strong>
+          <div class="game-code-line">
+            <strong>${encodeGameCode(state.game.seed)}</strong>
+            <button class="copy-code-button" data-action="copy-game-code" aria-label="ゲームコードをコピー" title="ゲームコードをコピー">⧉</button>
+          </div>
         </div>
       </section>
       <section class="panel">
@@ -699,6 +702,10 @@ function renderResult(displayScore = state.score.total) {
   app.querySelector("[data-action='share']").addEventListener("click", showShareModal);
   app.querySelector("[data-action='replay']").addEventListener("click", () => startGame(state.game.mode, state.game.mode === "code" ? state.game.seed : null));
   app.querySelector("[data-action='home']").addEventListener("click", renderHome);
+  app.querySelector("[data-action='copy-game-code']").addEventListener("click", async () => {
+    await copyText(encodeGameCode(state.game.seed));
+    showToast("ゲームコードをコピーしました。");
+  });
 }
 
 function animateScore(total) {
