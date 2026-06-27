@@ -77,7 +77,7 @@ function renderHome() {
       ${logoMarkup()}
       <section class="home-panel" aria-label="ホーム">
         <div class="panel-section button-stack">
-          <button class="primary-button" data-action="start-infinite" aria-label="無限2択チャレンジを開始">無限2択チャレンジ</button>
+          <button class="special-button" data-action="start-infinite" aria-label="無限2択チャレンジを開始">無限2択チャレンジ</button>
           <button class="primary-button" data-action="start-normal" aria-label="通常プレイを開始">通常プレイ</button>
           <button class="secondary-button" data-action="start-daily" aria-label="デイリーチャレンジを開始">デイリーチャレンジ</button>
           <button class="secondary-button" data-action="game-code" aria-label="ゲームコードを入力して遊ぶ">ゲームコードを入力して遊ぶ</button>
@@ -284,7 +284,7 @@ function renderInfiniteFinalResult() {
         </div>
       </section>
       <section class="panel">
-        <h2 class="panel-heading">2択の履歴</h2>
+        <h2 class="panel-heading">決めつけの道のり</h2>
         <div class="infinite-history">
           ${state.infinity.history.map(infiniteHistoryRow).join("")}
         </div>
@@ -334,18 +334,21 @@ function infiniteRankForStreak(streak) {
 function infiniteHistoryRow(entry) {
   return `
     <article class="history-row ${entry.isCorrect ? "correct" : "wrong"}">
-      <strong>${entry.round}問目</strong>
+      <div class="history-round">
+        <strong>${entry.round}問目</strong>
+        <span class="${entry.isCorrect ? "correct-text" : "wrong-text"}">${entry.isCorrect ? "正解" : "不正解"}</span>
+      </div>
       <div class="history-pair">
         ${entry.players.map((player, index) => `
           <div class="history-player ${index === entry.correctIndex ? "answer" : ""}">
             ${imageMarkup(player.image, player.name, "result-face")}
-            <span>${escapeHtml(player.name)}</span>
-            <b>OVR ${player.ovr}</b>
-            ${index === entry.choiceIndex ? "<em>選択</em>" : ""}
+            <div class="history-player-main">
+              <span>${escapeHtml(player.name)}</span>
+              <b>OVR ${player.ovr}</b>
+            </div>
           </div>
         `).join("")}
       </div>
-      <span class="${entry.isCorrect ? "correct-text" : "wrong-text"}">${entry.isCorrect ? "正解" : "不正解"}</span>
     </article>
   `;
 }
