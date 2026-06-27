@@ -1,5 +1,6 @@
 import { loadPlayers } from "./csvLoader.js";
 import { ABILITIES, createGame, finishGame, highLowResult, placeCurrentPlayer, substituteCurrentPlayer, swapRanks, useAbility } from "./game.js";
+import { mulberry32, pickOne, randomSeed } from "./daily.js";
 import { buildShareText, copyText, twitterIntent } from "./share.js";
 
 const app = document.querySelector("#app");
@@ -12,6 +13,7 @@ const PLACEHOLDER = "./assets/placeholder.svg";
 const state = {
   players: [],
   game: null,
+  infinity: null,
   score: null,
   rating: null,
   settings: loadStorage(),
@@ -75,8 +77,10 @@ function renderHome() {
       ${logoMarkup()}
       <section class="home-panel" aria-label="ホーム">
         <div class="panel-section button-stack">
+          <button class="primary-button" data-action="start-infinite" aria-label="無限2択チャレンジを開始">無限2択チャレンジ</button>
           <button class="primary-button" data-action="start-normal" aria-label="通常プレイを開始">通常プレイ</button>
           <button class="secondary-button" data-action="start-daily" aria-label="デイリーチャレンジを開始">デイリーチャレンジ</button>
+          <button class="secondary-button" data-action="game-code" aria-label="ゲームコードを入力して遊ぶ">ゲームコードを入力して遊ぶ</button>
           <button class="secondary-button" data-action="rules" aria-label="ルール説明を開く">ルール説明</button>
         </div>
         <div class="panel-section">
@@ -100,7 +104,9 @@ function renderHome() {
 
   app.querySelector("[data-action='start-normal']").addEventListener("click", () => startGame("normal"));
   app.querySelector("[data-action='start-daily']").addEventListener("click", () => startGame("daily"));
+  app.querySelector("[data-action='game-code']").addEventListener("click", showGameCodeModal);
   app.querySelector("[data-action='rules']").addEventListener("click", showRules);
+  app.querySelector("[data-action='start-infinite']").addEventListener("click", startInfiniteChallenge);
   bindHomeSettings();
 }
 
@@ -122,7 +128,7 @@ function bindHomeSettings() {
   });
 }
 
-function startGame(mode) {
+function startGame(mode, seedOverride = null) {
   const displayValid = state.settings.settings.showFace || state.settings.settings.showName;
   if (!displayValid) {
     app.querySelector("#home-error").textContent = "顔表示と名前表示を両方OFFにはできません。";
@@ -130,7 +136,7 @@ function startGame(mode) {
   }
 
   try {
-    state.game = createGame(state.players, mode, state.settings.settings);
+    state.game = createGame(state.players, mode, state.settings.settings, seedOverride);
     state.score = null;
     state.rating = null;
     state.additionalSelection = [];
@@ -138,6 +144,243 @@ function startGame(mode) {
   } catch (error) {
     showToast(error.message);
   }
+}
+
+function startInfiniteChallenge() {
+  const seed = randomSeed();
+  state.infinity = {
+    random: mulberry32(seed),
+    streak: 0,
+    history: [],
+    currentPair: null,
+    lastChoice: null,
+    lastCorrect: false
+  };
+  nextInfiniteQuestion();
+}
+
+function nextInfiniteQuestion() {
+  state.infinity.currentPair = pickInfinitePair();
+  state.infinity.lastChoice = null;
+  state.infinity.lastCorrect = false;
+  renderInfiniteQuestion();
+  scrollToTop();
+}
+
+function pickInfinitePair() {
+  const candidates = state.players.filter((player) => Number.isFinite(player.ovr));
+  for (let attempt = 0; attempt < 120; attempt += 1) {
+    const first = pickOne(candidates, state.infinity.random);
+    const second = pickOne(candidates, state.infinity.random);
+    if (String(first.id) !== String(second.id) && first.ovr !== second.ovr) {
+      return [first, second];
+    }
+  }
+  throw new Error("OVRが異なる2名を抽選できませんでした。");
+}
+
+function renderInfiniteHeader() {
+  return `
+    ${topBarMarkup("無限2択チャレンジ")}
+    <section class="infinite-status panel">
+      <h1>無限2択チャレンジ</h1>
+      <p class="infinite-streak">連続正解数：${state.infinity.streak}</p>
+      <p class="infinite-question">どちらの方が強いでしょう？</p>
+    </section>
+  `;
+}
+
+function renderInfiniteQuestion() {
+  const pair = state.infinity.currentPair;
+  app.innerHTML = `
+    <main class="screen infinite-screen">
+      ${renderInfiniteHeader()}
+      <section class="infinite-pair">
+        ${pair.map((player, index) => infiniteChoiceCard(player, index)).join("")}
+      </section>
+    </main>
+  `;
+
+  app.querySelectorAll("[data-infinite-choice]").forEach((button) => {
+    button.addEventListener("click", () => answerInfiniteQuestion(Number(button.dataset.infiniteChoice)));
+  });
+}
+
+function infiniteChoiceCard(player, index) {
+  return `
+    <article class="infinite-card">
+      ${imageMarkup(player.image, player.name, "infinite-face")}
+      <h2>${escapeHtml(player.name)}</h2>
+      <button class="primary-button" data-infinite-choice="${index}" aria-label="${escapeHtml(player.name)}の方が強い">この選手の方が強い</button>
+    </article>
+  `;
+}
+
+function answerInfiniteQuestion(choiceIndex) {
+  const pair = state.infinity.currentPair;
+  const correctIndex = pair[0].ovr > pair[1].ovr ? 0 : 1;
+  const isCorrect = choiceIndex === correctIndex;
+  const entry = {
+    round: state.infinity.history.length + 1,
+    players: pair,
+    choiceIndex,
+    correctIndex,
+    isCorrect
+  };
+  state.infinity.history.push(entry);
+  state.infinity.lastChoice = choiceIndex;
+  state.infinity.lastCorrect = isCorrect;
+  if (isCorrect) state.infinity.streak += 1;
+  renderInfiniteRoundResult(entry);
+  scrollToTop();
+}
+
+function renderInfiniteRoundResult(entry) {
+  app.innerHTML = `
+    <main class="screen infinite-screen">
+      ${renderInfiniteHeader()}
+      <section class="panel infinite-round-result">
+        <h2 class="${entry.isCorrect ? "correct-text" : "wrong-text"}">${entry.isCorrect ? "正解！" : "不正解"}</h2>
+        <div class="infinite-pair">
+          ${entry.players.map((player, index) => infiniteRevealCard(player, index, entry)).join("")}
+        </div>
+        <button class="${entry.isCorrect ? "primary-button" : "secondary-button"}" data-action="${entry.isCorrect ? "next-infinite" : "finish-infinite"}">
+          ${entry.isCorrect ? "次の問題へ" : "結果を表示"}
+        </button>
+      </section>
+    </main>
+  `;
+
+  app.querySelector("[data-action='next-infinite']")?.addEventListener("click", nextInfiniteQuestion);
+  app.querySelector("[data-action='finish-infinite']")?.addEventListener("click", renderInfiniteFinalResult);
+}
+
+function infiniteRevealCard(player, index, entry) {
+  const tags = [
+    index === entry.choiceIndex ? "<span class='choice-tag'>選択</span>" : "",
+    index === entry.correctIndex ? "<span class='correct-tag'>正解</span>" : ""
+  ].join("");
+  return `
+    <article class="infinite-card reveal">
+      ${imageMarkup(player.image, player.name, "infinite-face")}
+      <h2>${escapeHtml(player.name)}</h2>
+      <p class="infinite-ovr">OVR ${player.ovr}</p>
+      <div class="tag-row">${tags}</div>
+    </article>
+  `;
+}
+
+function renderInfiniteFinalResult() {
+  const rating = selectInfiniteRatingPlayer(state.infinity.streak);
+  app.innerHTML = `
+    <main class="screen result-grid infinite-screen">
+      ${renderInfiniteHeader()}
+      <section class="result-hero">
+        <p class="score-number">${state.infinity.streak}連続</p>
+        <div class="rating-block">
+          ${imageMarkup(rating.image, rating.playerName, "rating-face")}
+          <div class="rating-name">${escapeHtml(rating.playerName)}級</div>
+          <div>${escapeHtml(rating.label)}</div>
+        </div>
+      </section>
+      <section class="panel">
+        <h2 class="panel-heading">2択の履歴</h2>
+        <div class="infinite-history">
+          ${state.infinity.history.map(infiniteHistoryRow).join("")}
+        </div>
+      </section>
+      <section class="panel-section button-stack">
+        <button class="primary-button" data-action="start-infinite-again">もう一度遊ぶ</button>
+        <button class="secondary-button" data-action="home">ホームに戻る</button>
+      </section>
+    </main>
+  `;
+  app.querySelector("[data-action='start-infinite-again']").addEventListener("click", startInfiniteChallenge);
+  app.querySelector("[data-action='home']").addEventListener("click", renderHome);
+  scrollToTop();
+}
+
+function selectInfiniteRatingPlayer(streak) {
+  const rank = infiniteRankForStreak(streak);
+  if (rank.pele) {
+    return {
+      label: rank.label,
+      playerName: "ペレ",
+      image: "./assets/pele.jpg"
+    };
+  }
+
+  const candidates = state.players.filter((player) => player.ovr >= rank.min && player.ovr <= rank.max);
+  const selected = candidates.length ? pickOne(candidates, state.infinity.random) : pickOne(state.players, state.infinity.random);
+  return {
+    label: rank.label,
+    playerName: selected.name,
+    image: selected.image
+  };
+}
+
+function infiniteRankForStreak(streak) {
+  if (streak >= 18) return { label: "サッカーの王様級", pele: true };
+  if (streak >= 15) return { label: "OVR90以上級", min: 90, max: 99 };
+  if (streak >= 12) return { label: "OVR85以上90未満級", min: 85, max: 89 };
+  if (streak >= 9) return { label: "OVR80以上85未満級", min: 80, max: 84 };
+  if (streak >= 7) return { label: "OVR75以上80未満級", min: 75, max: 79 };
+  if (streak >= 5) return { label: "OVR70以上75未満級", min: 70, max: 74 };
+  if (streak >= 3) return { label: "OVR65以上70未満級", min: 65, max: 69 };
+  if (streak >= 1) return { label: "OVR60以上65未満級", min: 60, max: 64 };
+  return { label: "OVR60未満級", min: 0, max: 59 };
+}
+
+function infiniteHistoryRow(entry) {
+  return `
+    <article class="history-row ${entry.isCorrect ? "correct" : "wrong"}">
+      <strong>${entry.round}問目</strong>
+      <div class="history-pair">
+        ${entry.players.map((player, index) => `
+          <div class="history-player ${index === entry.correctIndex ? "answer" : ""}">
+            ${imageMarkup(player.image, player.name, "result-face")}
+            <span>${escapeHtml(player.name)}</span>
+            <b>OVR ${player.ovr}</b>
+            ${index === entry.choiceIndex ? "<em>選択</em>" : ""}
+          </div>
+        `).join("")}
+      </div>
+      <span class="${entry.isCorrect ? "correct-text" : "wrong-text"}">${entry.isCorrect ? "正解" : "不正解"}</span>
+    </article>
+  `;
+}
+
+function showGameCodeModal() {
+  showInfoModal("ゲームコードを入力", `
+    <div class="code-entry">
+      <label class="code-entry-label" for="game-code-input">ゲームコード</label>
+      <input id="game-code-input" class="code-input" type="text" autocomplete="off" placeholder="MR-XXXXXX">
+      <p id="game-code-error" class="danger-text"></p>
+    </div>
+  `, null, [
+    {
+      label: "このコードで遊ぶ",
+      action: () => {
+        const input = document.querySelector("#game-code-input");
+        const error = document.querySelector("#game-code-error");
+        const seed = decodeGameCode(input.value);
+        if (!Number.isFinite(seed)) {
+          error.textContent = "ゲームコードが正しくありません。";
+          return;
+        }
+        closeModal();
+        startGame("code", seed);
+      }
+    }
+  ]);
+
+  const input = modalRoot.querySelector("#game-code-input");
+  input?.focus();
+  input?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      modalRoot.querySelector("[data-extra-action='0']")?.click();
+    }
+  });
 }
 
 function renderPlay() {
@@ -174,6 +417,7 @@ function renderPlay() {
       if (!placed) return;
       if (game.phase === "additional") renderAdditionalTime();
       else renderPlay();
+      scrollToTop();
     });
   });
 
@@ -221,27 +465,29 @@ function handleAbility(ability) {
       showToast("同OVRの交代候補がいません。");
       return;
     }
-    showInfoModal("SUBSTITUTION", `<p>${escapeHtml(current.name)}</p><p>↓</p><p><strong>${escapeHtml(replacement.name)}</strong></p>`, () => renderPlay());
+    showInfoModal("SUBSTITUTION", `
+      ${abilityPlayerMarkup(current)}
+      <p class="substitution-arrow">↓</p>
+      ${abilityPlayerMarkup(replacement)}
+    `, () => renderPlay());
   }
   renderPlay();
 }
 
 function showHighLowModal(current, placed) {
-  const rows = placed.map((player) => `
-    <button class="rank-slot ${rankColor(0)}" data-high-low="${escapeHtml(String(player.scoreId))}" aria-label="${escapeHtml(player.name)}と比較">
-      <span class="rank-number">VS</span>
-      ${imageMarkup(player.image, player.name, "rank-face")}
-      <span class="rank-name">${escapeHtml(player.name)}</span>
-      <span class="rank-ovr">?</span>
-    </button>
-  `).join("");
+  const rows = state.game.playerRanking.map((player, index) => highLowSlotMarkup(player, index)).join("");
 
   showInfoModal("ハイアンドロー", `<div class="ranking-list">${rows}</div>`);
   modalRoot.querySelectorAll("[data-high-low]").forEach((button) => {
     button.addEventListener("click", () => {
       const target = placed.find((player) => String(player.scoreId) === button.dataset.highLow);
       useAbility(state.game, "highLow");
-      showInfoModal("判定", `<p>この選手は</p><p><strong>${escapeHtml(target.name)}</strong>より</p><p class="additional-title">${highLowResult(current, target)}</p>`, () => renderPlay());
+      showInfoModal("判定", `
+        <p>この選手は</p>
+        ${abilityPlayerMarkup(target)}
+        <p>より</p>
+        <p class="additional-title">${highLowResult(current, target)}</p>
+      `, () => renderPlay());
     });
   });
 }
@@ -346,21 +592,21 @@ function renderAdditionalTime() {
       document.getElementById("swap-confirm-message");
 
     message.textContent =
-      `${playerA.name} と ${playerB.name} を入れ替えて結果を表示しますか？`;
+      `${maskedPlayerName(playerA)} と ${maskedPlayerName(playerB)} を入れ替えて結果を表示しますか？`;
 
     panel.classList.remove("hidden");
 
     document
       .getElementById("confirm-swap")
-      .addEventListener("click", () => {
+      .onclick = () => {
         swapRanks(game, indexA, indexB);
         game.additionalTimeUsed = true;
         showResult();
-      });
+      };
 
     document
       .getElementById("cancel-swap")
-      .addEventListener("click", () => {
+      .onclick = () => {
         state.additionalSelection = [];
 
         rankingButtons.forEach((btn) =>
@@ -368,7 +614,7 @@ function renderAdditionalTime() {
         );
 
         hideSwapConfirmation();
-      });
+      };
   }
 
   function hideSwapConfirmation() {
@@ -408,6 +654,10 @@ function renderResult(displayScore = state.score.total) {
           <div class="rating-name">${escapeHtml(state.rating.playerName)}級</div>
           <div>${escapeHtml(state.rating.label)}</div>
         </div>
+        <div class="game-code-card">
+          <span>ゲームコード</span>
+          <strong>${encodeGameCode(state.game.seed)}</strong>
+        </div>
       </section>
       <section class="panel">
         <h2 class="panel-heading">スコア内訳</h2>
@@ -416,7 +666,7 @@ function renderResult(displayScore = state.score.total) {
           ${scoreRow("連続正解ボーナス(連続数×3)", `${state.score.streakBonus}/30`)}
           ${scoreRow("1位的中ボーナス", `${state.score.firstBonus}/10`)}
           ${scoreRow("最下位的中ボーナス", `${state.score.lastBonus}/10`)}
-          ${scoreRow("合計得点", `${state.score.total}/150`)}
+          ${scoreRow("合計得点", `${state.score.total}/150`, "score-total-row")}
         </div>
       </section>
       <section class="columns-2">
@@ -444,7 +694,7 @@ function renderResult(displayScore = state.score.total) {
   `;
 
   app.querySelector("[data-action='share']").addEventListener("click", showShareModal);
-  app.querySelector("[data-action='replay']").addEventListener("click", () => startGame(state.game.mode));
+  app.querySelector("[data-action='replay']").addEventListener("click", () => startGame(state.game.mode, state.game.mode === "code" ? state.game.seed : null));
   app.querySelector("[data-action='home']").addEventListener("click", renderHome);
 }
 
@@ -463,7 +713,7 @@ function animateScore(total) {
 }
 
 function showShareModal() {
-  const text = buildShareText(state.score, state.rating, state.game.playerRanking);
+  const text = buildShareText(state.score, state.rating, encodeGameCode(state.game.seed));
   showInfoModal("結果をシェア", `<textarea class="share-preview" readonly>${escapeHtml(text)}</textarea>`, null, [
     { label: "コピー", action: async () => { await copyText(text); showToast("クリップボードにコピーしました。"); closeModal(); } },
     { label: "Xで共有", action: () => window.open(twitterIntent(text), "_blank", "noopener") }
@@ -580,12 +830,12 @@ function renderError(error) {
 
 function logoMarkup() {
   return `
-    <div>
+    <div class="home-brand">
       <div class="logo" aria-label="Muchi Rank">
         <span class="logo-main">MUCHI</span>
         <span class="logo-sub">RANK</span>
       </div>
-      <p>Make Rank By Face</p>
+      <p class="home-subtitle">Make Rank By Face</p>
     </div>
   `;
 }
@@ -647,14 +897,53 @@ function playerClueMarkup(player) {
   `;
 }
 
+function maskedFaceMarkup(player, className) {
+  return state.settings.settings.showFace ? imageMarkup(player.image, player.name, className) : `<span class="${className} clue-hidden-face" aria-hidden="true"></span>`;
+}
+
+function maskedPlayerName(player) {
+  return state.settings.settings.showName ? escapeHtml(player.name) : "NAME HIDDEN";
+}
+
+function abilityPlayerMarkup(player) {
+  return `
+    <div class="ability-player">
+      ${maskedFaceMarkup(player, "ability-face")}
+      <strong class="ability-player-name">${maskedPlayerName(player)}</strong>
+    </div>
+  `;
+}
+
+function highLowSlotMarkup(player, index) {
+  if (!player) {
+    return `
+      <button class="rank-slot ${rankColor(index)} high-low-slot" disabled aria-label="${index + 1}位は未配置">
+        <span class="rank-number">${index + 1}位</span>
+        <span></span>
+        <span class="rank-name">未配置</span>
+        <span class="rank-ovr">-</span>
+      </button>
+    `;
+  }
+
+  return `
+    <button class="rank-slot ${rankColor(index)} high-low-slot" data-high-low="${escapeHtml(String(player.scoreId))}" aria-label="${index + 1}位の配置済み選手と比較">
+      <span class="rank-number">${index + 1}位</span>
+      ${maskedFaceMarkup(player, "rank-face")}
+      <span class="rank-name">${maskedPlayerName(player)}</span>
+      <span class="rank-ovr">?</span>
+    </button>
+  `;
+}
+
 function rankSlotMarkup(player, index, mode) {
   const action = mode === "place" ? `data-rank-place="${index}"` : `data-rank-swap="${index}"`;
   const disabled = mode === "place" && player ? "disabled" : "";
   return `
     <button class="rank-slot ${rankColor(index)}" ${action} ${disabled} aria-label="${index + 1}位">
       <span class="rank-number">${ordinal(index + 1)}</span>
-      ${player ? imageMarkup(player.image, player.name, "rank-face") : "<span></span>"}
-      <span class="rank-name">${player ? escapeHtml(player.name) : "未配置"}</span>
+      ${player ? maskedFaceMarkup(player, "rank-face") : "<span></span>"}
+      <span class="rank-name">${player ? maskedPlayerName(player) : "未配置"}</span>
       <span class="rank-ovr">${player ? "OVR ?" : ""}</span>
     </button>
   `;
@@ -671,12 +960,28 @@ function resultRowMarkup(player, index) {
   `;
 }
 
-function scoreRow(label, value) {
-  return `<div class="stat-row"><span>${label}</span><strong>${value}</strong></div>`;
+function scoreRow(label, value, className = "") {
+  return `<div class="stat-row ${className}"><span>${label}</span><strong>${value}</strong></div>`;
 }
 
 function imageMarkup(src, alt, className) {
   return `<img class="${className}" src="${escapeAttribute(src || PLACEHOLDER)}" alt="${escapeAttribute(alt)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='${PLACEHOLDER}'">`;
+}
+
+function encodeGameCode(seed) {
+  return `MR-${Math.abs(Number(seed)).toString(36).toUpperCase()}`;
+}
+
+function decodeGameCode(code) {
+  const normalized = String(code || "").trim().toUpperCase().replace(/\s+/g, "");
+  const match = normalized.match(/^MR-?([0-9A-Z]+)$/);
+  if (!match) return NaN;
+  const seed = Number.parseInt(match[1], 36);
+  return Number.isFinite(seed) ? seed : NaN;
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: "auto" });
 }
 
 function rankColor(index) {

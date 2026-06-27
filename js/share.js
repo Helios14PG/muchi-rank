@@ -1,4 +1,4 @@
-export function buildShareText(score, rating, ranking) {
+export function buildShareText(score, rating, gameCode) {
   const lines = [
     `${score.total}点`,
     `${rating.playerName}級`,
@@ -9,8 +9,7 @@ export function buildShareText(score, rating, ranking) {
     `1位的中ボーナス ${score.firstBonus}`,
     `最下位的中ボーナス ${score.lastBonus}`,
     "",
-    "【作成したランキング】",
-    ...ranking.map((player, index) => `${index + 1}位 ${player.name}`),
+    `ゲームコード：${gameCode}`,
     "",
     "#MuchiRank"
   ];

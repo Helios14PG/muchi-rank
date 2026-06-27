@@ -8,8 +8,8 @@ export const ABILITIES = {
   substitution: "選手交代(同OVRの選手と交代)"
 };
 
-export function createGame(players, mode, settings) {
-  const seed = mode === "daily" ? dateSeed() : randomSeed();
+export function createGame(players, mode, settings, seedOverride = null) {
+  const seed = Number.isFinite(seedOverride) ? seedOverride : mode === "daily" ? dateSeed() : randomSeed();
   const random = mulberry32(seed);
   const selectedPlayers = generateQuestion(players, random, settings.minOvr);
   const answerRanking = [...selectedPlayers].sort((a, b) => b.ovr - a.ovr);
