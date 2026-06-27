@@ -782,11 +782,40 @@ button:disabled {
   place-items: center;
   width: 34px;
   min-height: 34px;
+  padding: 0;
   border-color: rgba(244, 201, 93, 0.55);
   background: rgba(244, 201, 93, 0.08);
   color: var(--gold);
-  font-size: 1.05rem;
   line-height: 1;
+}
+
+.copy-code-icon {
+  position: relative;
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.copy-code-icon::before,
+.copy-code-icon::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-radius: 2px;
+}
+
+.copy-code-icon::before {
+  right: 0;
+  top: 0;
+  opacity: 0.72;
+}
+
+.copy-code-icon::after {
+  left: 0;
+  bottom: 0;
+  background: #1d222b;
 }
 
 .score-total-row {
