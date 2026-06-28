@@ -359,7 +359,7 @@ function showGameCodeModal() {
       <label class="code-entry-label" for="game-code-input">ゲームコード</label>
       <input id="game-code-input" class="code-input" type="text" autocomplete="off" placeholder="MR-XXXXXX">
       <button class="secondary-button random-code-button" type="button" data-action="random-game-code">
-        <span>ランダムなゲームコードを発行</span>
+        <span class="random-code-label">ランダムなゲームコードを発行</span>
         <span class="copy-code-icon" aria-hidden="true"></span>
       </button>
       <p id="game-code-error" class="danger-text"></p>
