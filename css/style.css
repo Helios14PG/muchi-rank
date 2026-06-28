@@ -932,11 +932,22 @@ button:disabled {
 }
 
 .random-code-button {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
+  column-gap: 10px;
   width: 100%;
+  padding: 0 14px;
+}
+
+.random-code-button .random-code-label {
+  grid-column: 2;
+  justify-self: center;
+}
+
+.random-code-button .copy-code-icon {
+  grid-column: 3;
+  justify-self: start;
 }
 .share-preview {
   width: 100%;
