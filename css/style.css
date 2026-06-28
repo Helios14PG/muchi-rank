@@ -930,6 +930,14 @@ button:disabled {
   font-size: 1.35rem;
   text-transform: uppercase;
 }
+
+.random-code-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
 .share-preview {
   width: 100%;
   min-height: 220px;
