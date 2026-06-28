@@ -358,6 +358,10 @@ function showGameCodeModal() {
     <div class="code-entry">
       <label class="code-entry-label" for="game-code-input">ゲームコード</label>
       <input id="game-code-input" class="code-input" type="text" autocomplete="off" placeholder="MR-XXXXXX">
+      <button class="secondary-button random-code-button" type="button" data-action="random-game-code">
+        <span>ランダムなゲームコードを発行</span>
+        <span class="copy-code-icon" aria-hidden="true"></span>
+      </button>
       <p id="game-code-error" class="danger-text"></p>
     </div>
   `, null, [
@@ -379,6 +383,12 @@ function showGameCodeModal() {
 
   const input = modalRoot.querySelector("#game-code-input");
   input?.focus();
+  modalRoot.querySelector("[data-action='random-game-code']")?.addEventListener("click", async () => {
+    const code = encodeGameCode(randomSeed());
+    input.value = code;
+    await copyText(code);
+    showToast("ランダムなゲームコードをコピーしました。");
+  });
   input?.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
       modalRoot.querySelector("[data-extra-action='0']")?.click();
